@@ -1,1 +1,205 @@
-<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ScoreLab 발표 자료</title><style>*{box-sizing:border-box}body{margin:0;font:clamp(16px,2.3vw,32px)/1.55 system-ui,sans-serif;color:#163c36;background:#f2f5ef}section{min-height:100vh;display:grid;align-content:center;padding:6vw 9vw;border-bottom:1px solid #a8bcb5}h1{font-size:clamp(32px,4.6vw,68px);line-height:1.16;margin:.3em 0 .6em;letter-spacing:-.045em}p{margin:.35em 0}small{color:#056756;font-weight:700}html{scroll-snap-type:y proximity}section{scroll-snap-align:start}@media print{@page{size:landscape;margin:0}section{height:100vh;break-after:page}}</style><section id="s1"><small>01 / 08　 ScoreLab</small><h1>예측 CSV가 최종 성적이 되기까지</h1><p>참가자가 제출한 한 건을 따라가며 자동 채점, 코드 검토, 최종 승인 과정을 설명합니다.</p></section><section id="s2"><small>02 / 08　 참가와 접수</small><h1>세 파일을 한 번에 제출합니다</h1><p>참가자는 대회 코드로 가입하고 프로젝트에서 정답 열을 뺀 데이터를 받습니다.</p><p>예측 CSV, Notebook, 모델 가중치가 필수입니다. 서버는 파일 내용과 ID, 열, 행, 레이블을 검사합니다.</p></section><section id="s3"><small>03 / 08　 Kaggle 실험</small><h1>설비 관측 10,000건으로 고장 여부를 분류합니다</h1><p>산업 데이터를 모사한 AI4I 2020 합성 데이터입니다. 고장 비율을 유지해 학습 8,000건과 평가 2,000건으로 분리했습니다.</p><p>온도·회전수·토크·마모·제품 등급을 사용했습니다. 고장 유형과 ID는 입력에서 제외했습니다.</p><p>학습셋 내부에서 고장 F1으로 결정트리를 선택한 뒤 가중치를 저장해 예측 CSV를 생성했습니다.</p></section><section id="s4"><small>04 / 08　 채점 결과</small><h1>정확도 99.60% · 실제 고장 68건 중 60건 탐지</h1><p>정상 1,932건과 고장 60건을 맞혔습니다. 오경보는 0건이며 고장 8건을 놓쳤습니다.</p><p>모든 행을 정상으로 예측해도 정확도는 96.60%입니다. 고장 재현율은 이 기준의 0%에서 결정트리의 88.24%로 높아졌습니다.</p><p>공식 CSV 점수는 1,992 ÷ 2,000 = 0.996입니다. 이 점수는 해당 평가 분할에서 측정했습니다.</p></section><section id="s5"><small>05 / 08　 마감과 횟수</small><h1>마감 전 시작한 업로드는 완료 후 채점합니다</h1><p>각 프로젝트에는 여러 마감과 회차별 한도를 설정합니다. 성공한 채점만 1회 차감합니다.</p><p>마감 후 신규 제출은 접수만 합니다. 필수 파일 누락이나 잘못된 레이블은 점수를 만들지 않습니다.</p></section><section id="s6"><small>06 / 08　 리더보드</small><h1>참가자별 최고점과 검증 상태를 함께 표시합니다</h1><p>참가자 화면은 가명, 담당 관리자 화면은 실명입니다. 참가자 간 점수가 같으면 공동 순위입니다.</p><p>한 참가자의 제출 점수가 같으면 가장 최근에 수신을 완료한 기록부터 검토합니다.</p></section><section id="s7"><small>07 / 08　 검토와 확정</small><h1>부적합 제안은 관리자2가 승인할 때 반영합니다</h1><p>관리자1은 셀 원문·로그, 가중치, 동일 예측 기록 수를 보고 의견을 남깁니다.</p><p>관리자2가 적합을 승인하면 대표 기록이 확정됩니다. 부적합을 승인하면 다음 후보로 이동하며 이미 차감된 횟수는 유지됩니다.</p></section><section id="s8"><small>08 / 08　 직접 확인</small><h1>제출 → 검토 제안 → 최종 승인</h1><p>README의 npm run demo 명령으로 실행하세요. 참가자 계정에서 samples 폴더의 세 파일을 올려 점수와 잔여 횟수를 확인합니다.</p><p>검토 연습 프로젝트에서는 관리자1과 관리자2 계정으로 같은 제출의 판정 전후를 확인할 수 있습니다.</p></section><script>onkeydown=e=>{if(['ArrowRight','ArrowDown','ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();let a=[...document.querySelectorAll('section')],i=a.findIndex(x=>x.getBoundingClientRect().bottom>innerHeight/2);a[Math.max(0,Math.min(a.length-1,i+(['ArrowRight','ArrowDown'].includes(e.key)?1:-1)))].scrollIntoView()}}</script></html>
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScoreLab 발표 자료</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f5f7f3;
+      --ink: #163c36;
+      --muted: #3c5651;
+      --accent: #006650;
+      --line: #b8c9c1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: clamp(1rem, 2.2vw, 1.6rem)/1.6 system-ui, sans-serif;
+      word-break: keep-all;
+    }
+
+    section {
+      min-height: 100vh;
+      min-height: 100svh;
+      display: grid;
+      align-content: center;
+      padding: clamp(3rem, 8vh, 7rem) clamp(1.4rem, 9vw, 9rem);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .content { width: 100%; max-width: 48rem; }
+    .section-name { color: var(--accent); font-size: .72em; font-weight: 750; }
+
+    h1, h2 {
+      margin: .35em 0 0;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 1.22;
+      letter-spacing: -.035em;
+    }
+
+    .points {
+      display: grid;
+      gap: clamp(1.55rem, 4vh, 2.8rem);
+      margin-top: clamp(2rem, 5vh, 3.3rem);
+    }
+
+    p { margin: 0; }
+    .detail { color: var(--muted); font-size: .8em; }
+    .result { color: var(--accent); font-weight: 750; }
+    a { color: var(--accent); text-underline-offset: .2em; }
+
+    nav {
+      position: fixed;
+      bottom: .85rem;
+      right: 1rem;
+      z-index: 1;
+      display: flex;
+      gap: .35rem;
+      padding: .3rem;
+      border: 1px solid var(--line);
+      border-radius: .6rem;
+      background: var(--paper);
+      font-size: 1rem;
+    }
+
+    nav a {
+      min-width: 2rem;
+      padding: .14rem .35rem;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    nav a[aria-current="location"] { color: white; background: var(--accent); border-radius: .25rem; }
+
+    @media print {
+      @page { size: landscape; margin: 0; }
+      nav { display: none; }
+      body { font-size: 16pt; }
+      section {
+        min-height: 0;
+        height: 100vh;
+        padding: 8vh 9vw;
+        break-after: page;
+        break-inside: avoid;
+        border: 0;
+      }
+      section:last-child { break-after: auto; }
+      h1, h2 { font-size: 32pt; }
+      .points { gap: 1.2rem; margin-top: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="슬라이드 이동">
+    <a href="#s1" aria-label="1. 개발 목적" aria-current="location">1</a>
+    <a href="#s2" aria-label="2. 구현 흐름">2</a>
+    <a href="#s3" aria-label="3. Kaggle 실험">3</a>
+    <a href="#s4" aria-label="4. 시연">4</a>
+    <a href="#s5" aria-label="5. 운영 규칙">5</a>
+  </nav>
+
+  <main>
+    <section id="s1" aria-labelledby="title">
+      <div class="content">
+        <p class="section-name">ScoreLab</p>
+        <h1 id="title">예측 CSV가<br>최종 성적이 되기까지</h1>
+
+        <div class="points">
+          <p>AI 모델의 예측 결과를 자동 채점하고, 제출 코드를 검토해 경진대회 성적을 확정하는 웹 서비스입니다.</p>
+          <p class="detail">Node.js · SQLite</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="s2" aria-labelledby="workflow">
+      <div class="content">
+        <p class="section-name">구현 흐름</p>
+        <h2 id="workflow">제출·채점·승인</h2>
+
+        <div class="points">
+          <p><strong>제출</strong><br>참가자가 예측 CSV, Notebook, 모델 가중치를 올립니다.</p>
+          <p><strong>채점</strong><br>서버가 행 ID로 예측값과 정답을 대조하고, 최고점을 익명 리더보드에 표시합니다.</p>
+          <p><strong>승인</strong><br>관리자1이 코드와 로그를 검토해 판정을 제안하고, 관리자2가 승인합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="s3" aria-labelledby="experiment">
+      <div class="content">
+        <p class="section-name">Kaggle 실험</p>
+        <h2 id="experiment">평가셋 고장 68건 중<br>60건 탐지</h2>
+
+        <div class="points">
+          <p>설비를 모사한 합성 데이터 10,000건 중<br>8,000건으로 결정트리를 학습하고 2,000건으로 평가했습니다.</p>
+          <p><strong>정확도 99.60%</strong> · 고장 8건 미탐 · 오경보 0건</p>
+          <p class="detail">모두 정상으로 분류하면 정확도는 96.60%이고, 탐지한 고장은 0건입니다. <a href="https://www.kaggle.com/datasets/shivamb/machine-predictive-maintenance-classification">Kaggle 데이터셋</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="s4" aria-labelledby="demo">
+      <div class="content">
+        <p class="section-name">시연</p>
+        <h2 id="demo">제출하면 점수와<br>남은 횟수를 확인</h2>
+
+        <div class="points">
+          <p>세 파일을 올리고 제출 상세를 엽니다.</p>
+          <p><strong class="result">공식 점수 0.996</strong><br>정답 1,992건 ÷ 평가 2,000건</p>
+          <p class="detail">채점이 완료되면 해당 회차의 남은 제출 횟수가 1회 줄어듭니다. <a href="https://github.com/wjdekgur02/ai-/raw/b1fe82b93a2bd233ed597b7514073a7c3a4a238d/docs/scorelab-demo.mp4">시연 영상</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="s5" aria-labelledby="rules">
+      <div class="content">
+        <p class="section-name">운영 규칙</p>
+        <h2 id="rules">마감부터 최종 판정까지</h2>
+
+        <div class="points">
+          <p><strong>마감과 횟수</strong><br>마감 전에 시작한 업로드는 수신 완료 후 채점합니다. 마감 후 새 제출은 접수만 합니다.</p>
+          <p><strong>정답 비공개</strong><br>참가자에게는 정답 열을 제거한 평가 데이터와 예측 양식을 제공합니다.</p>
+          <p><strong>차순위 검토</strong><br>관리자2가 부적합을 승인하면 같은 참가자의 다음 기록을 검토합니다.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const slides = [...document.querySelectorAll('main section')];
+    const links = [...document.querySelectorAll('nav a')];
+
+    function currentSlide() {
+      const midpoint = window.innerHeight / 2;
+      return slides.findIndex(slide => slide.getBoundingClientRect().bottom > midpoint);
+    }
+
+    function markCurrent() {
+      const index = currentSlide();
+      links.forEach((link, i) => {
+        if (i === index) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    }
+
+    window.addEventListener('scroll', markCurrent, { passive: true });
+    window.addEventListener('resize', markCurrent);
+    markCurrent();
+
+    window.addEventListener('keydown', event => {
+      const direction = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[event.key];
+      if (!direction || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      const index = currentSlide() + direction;
+      if (index >= 0 && index < slides.length) {
+        event.preventDefault();
+        slides[index].scrollIntoView({ block: 'start' });
+      }
+    });
+  </script>
+</body>
+</html>
