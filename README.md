@@ -13,7 +13,7 @@ ScoreLab은 경진대회 참가자의 예측 결과를 같은 기준으로 채�
 
 ## 시연 영상
 
-[ScoreLab 시연 영상 보기 (WebM)](docs/scorelab-demo.webm)
+[ScoreLab 시연 영상 보기 (MP4)](docs/scorelab-demo.mp4)
 
 ## 실행과 역할별 확인
 
