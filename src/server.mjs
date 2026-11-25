@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { extname } from 'node:path';
 import { timingSafeEqual } from 'node:crypto';
 import { InputError, LIMITS, MiB, METRICS, HIGHER, dataset, encodeCsv, evaluate, expect,
-  inspectModel, inspectNotebook, score } from './evaluate.mjs';
+  comparePredictions, inspectModel, inspectNotebook, score } from './evaluate.mjs';
 import { audit, connect, createProject, enroll, hash, opaque, passwordDigest, rejectStale, standings, verifyPassword } from './store.mjs';
 import * as views from './views.mjs';
 
@@ -470,7 +470,7 @@ async function handle(ctx, path) {
         s JOIN users u ON u.id=s.user_id WHERE s.project_id=? ORDER BY s.started DESC LIMIT 100`, project.id);
       return page(ctx, '검토 대기열', views.reviewQueue(ctx, contest, project, standings(store, project), logs, reviewState(project.id)));
     }
-    const subMatch = /^s\/([\w-]{24})(?:\/(propose|decide|file\/(?:prediction|notebook|model)))?$/.exec(action);
+    const subMatch = /^s\/([\w-]{24})(?:\/(propose|decide|compare|file\/(?:prediction|notebook|model)))?$/.exec(action);
     if (subMatch) {
       const record = store.get(`SELECT s.*,u.name,r.name AS reviewer_name,a.name AS approver_name FROM submissions s
         JOIN users u ON u.id=s.user_id LEFT JOIN users r ON r.id=s.reviewer_id LEFT JOIN users a ON a.id=s.approver_id
@@ -484,13 +484,39 @@ async function handle(ctx, path) {
           inspectNotebook(store.get("SELECT payload FROM artifacts WHERE submission_id=? AND kind='notebook'", record.id).payload) : [];
         const duplicates = staff && record.digest ? store.get(`SELECT count(*) AS n FROM submissions
           WHERE project_id=? AND user_id<>? AND digest=? AND status='scored'`, project.id, record.user_id, record.digest).n : 0;
-        return page(ctx, '제출 상세', views.submission(ctx, contest, project, record, files, cells, duplicates, candidateAccess(ctx, project, record)));
+        const comparison = staff && record.status === 'scored' ? store.get(`SELECT c.*,u.name AS reviewer_name
+          FROM review_comparisons c JOIN users u ON u.id=c.reviewer_id
+          WHERE c.submission_id=? ORDER BY c.id DESC LIMIT 1`, record.id) : null;
+        const allowed = candidateAccess(ctx, project, record);
+        return page(ctx, '제출 상세', views.submission(ctx, contest, project, record, files, cells, duplicates, comparison, allowed));
       }
       if (operation?.startsWith('file/') && get) {
         const kind = operation.slice(5);
         const artifact = store.get('SELECT ext,payload FROM artifacts WHERE submission_id=? AND kind=?', record.id, kind);
         if (!artifact) fail(404, '파일을 찾을 수 없습니다.');
         return download(res, kind + artifact.ext, artifact.payload);
+      }
+      if (operation === 'compare' && !get) {
+        requireRole(ctx, 'reviewer', 'admin');
+        if (!candidateAccess(ctx, project, record).propose) fail(409, '현재 검토 대상에 판정을 제안하기 전까지만 대조할 수 있습니다.');
+        const data = await formData(ctx, LIMITS.csv + 32 * 1024, true);
+        sameCsrf(ctx, text(data, '_csrf'));
+        const note = text(data, 'source_note').trim();
+        expect(shape(note, 500), '재생성 파일을 만든 방법을 500자 이내로 입력해 주세요.');
+        const regenerated = await file(data, 'regenerated', ['.csv'], LIMITS.csv, '재생성 CSV');
+        store.transaction(() => {
+          const current = store.get('SELECT * FROM submissions WHERE id=?', record.id);
+          if (!candidateAccess(ctx, project, current).propose) fail(409, '검토 대상 또는 판정 상태가 바뀌었습니다.');
+          const source = store.get("SELECT payload FROM artifacts WHERE submission_id=? AND kind='prediction'", record.id);
+          if (!source) fail(409, '원본 예측 CSV를 찾을 수 없습니다.');
+          const spec = store.get('SELECT id_name,target_name,metric,ids,classes FROM projects WHERE id=?', project.id);
+          const compared = comparePredictions(source.payload, regenerated.bytes, spec);
+          store.run(`INSERT INTO review_comparisons(submission_id,reviewer_id,created,source_note,digest,total,matched,differences)
+            VALUES (?,?,?,?,?,?,?,?)`, record.id, user.id, Date.now(), note, compared.digest,
+          compared.total, compared.matched, JSON.stringify(compared.differences));
+          audit(store, contest.id, user.id, '예측 CSV 대조', record.id);
+        });
+        return redirect(res, '/p/' + project.id + '/s/' + record.id);
       }
       if (['propose', 'decide'].includes(operation) && !get) {
         requireRole(ctx, ...(operation === 'propose' ? ['reviewer', 'admin'] : ['admin']));

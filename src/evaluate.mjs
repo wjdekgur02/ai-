@@ -114,6 +114,19 @@ export function evaluate(bytes, project) {
   };
 }
 
+export function comparePredictions(original, regenerated, project) {
+  const submitted = evaluate(original, project);
+  const replay = evaluate(regenerated, project);
+  const ids = JSON.parse(project.ids);
+  const differences = [];
+  let matched = 0;
+  for (let i = 0; i < ids.length; i++) {
+    if (submitted.values[i] === replay.values[i]) matched++;
+    else if (differences.length < 5) differences.push(ids[i]);
+  }
+  return { total: ids.length, matched, differences, digest: replay.digest };
+}
+
 export function score(metric, predicted, actual, classes) {
   let value;
   switch (metric) {

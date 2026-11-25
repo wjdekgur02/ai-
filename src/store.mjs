@@ -54,6 +54,14 @@ CREATE TABLE IF NOT EXISTS artifacts (
   submission_id TEXT NOT NULL REFERENCES submissions(id), kind TEXT NOT NULL,
   ext TEXT NOT NULL, payload BLOB NOT NULL, PRIMARY KEY(submission_id,kind)
 ) STRICT;
+CREATE TABLE IF NOT EXISTS review_comparisons (
+  id INTEGER PRIMARY KEY, submission_id TEXT NOT NULL REFERENCES submissions(id),
+  reviewer_id INTEGER NOT NULL REFERENCES users(id), created INTEGER NOT NULL,
+  source_note TEXT NOT NULL, digest TEXT NOT NULL, total INTEGER NOT NULL,
+  matched INTEGER NOT NULL CHECK(matched >= 0 AND matched <= total),
+  differences TEXT NOT NULL
+) STRICT;
+CREATE INDEX IF NOT EXISTS comparison_submission ON review_comparisons(submission_id,id DESC);
 CREATE TABLE IF NOT EXISTS audit (
   id INTEGER PRIMARY KEY, contest_id INTEGER NOT NULL REFERENCES contests(id),
   actor_id INTEGER NOT NULL REFERENCES users(id), action TEXT NOT NULL, target TEXT NOT NULL, happened INTEGER NOT NULL

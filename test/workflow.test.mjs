@@ -46,8 +46,34 @@ test('upload, score, anonymous standings, invalid upload, late archive and two-p
   const project=db.get('SELECT * FROM projects WHERE id=1');
   const first=standings(db,project)[0];
   const path='/p/1/s/'+first.id;
+  const original = db.get("SELECT payload FROM artifacts WHERE submission_id=? AND kind='prediction'", first.id);
+  const [header, ...rows] = Buffer.from(original.payload).toString('utf8').trim().split(/\r?\n/);
+  const csv = content => {
+    const data = new FormData();
+    data.set('_csrf', csrf);
+    data.set('source_note', '모델에서 재생성한 예측');
+    data.set('regenerated', new Blob([content]), 'regenerated.csv');
+    return data;
+  };
+  const reordered = [header, ...rows.slice().reverse()].join('\n');
+  assert.equal((await dispatch(first.user_id, path+'/compare', csv(reordered))).status, 403);
+  assert.equal((await dispatch(2, path+'/compare', csv([header, ...rows.slice(1)].join('\n')))).status, 400);
+  assert.equal((await dispatch(2, path+'/compare', csv(reordered))).status, 303);
+  assert.match((await dispatch(2, path)).content, new RegExp(rows.length + ' / ' + rows.length + '건 일치'));
+
+  const [changedId, oldLabel] = rows[0].split(',');
+  const changed = [header, changedId+','+(oldLabel==='normal' ? 'fault' : 'normal'), ...rows.slice(1)].join('\n');
+  assert.equal((await dispatch(2, path+'/compare', csv(changed))).status, 303);
+  const approvalView = await dispatch(1, path);
+  assert.match(approvalView.content, new RegExp((rows.length-1) + ' / ' + rows.length + '건 일치'));
+  assert.match(approvalView.content, new RegExp('ID 예시 ' + changedId));
+  assert.doesNotMatch((await dispatch(first.user_id, path)).content, /재생성 CSV 대조/);
+  const comparisons = db.all('SELECT matched FROM review_comparisons WHERE submission_id=? ORDER BY id', first.id);
+  assert.deepEqual(comparisons.map(row => row.matched), [rows.length, rows.length-1]);
+  assert.equal(db.get('SELECT score FROM submissions WHERE id=?', first.id).score, first.score);
   const decision=choice=>new URLSearchParams({_csrf:csrf,choice,note:'시연 검토 기록'});
   assert.equal((await dispatch(2,path+'/propose',decision('fail'))).status,303);
+  assert.equal((await dispatch(2, path+'/compare', csv(reordered))).status, 409);
   assert.equal(standings(db,project)[0].id,first.id);
   assert.equal((await dispatch(1,path+'/decide',decision('approve'))).status,303);
   assert.equal(standings(db,project)[0].score,0.8333333333);

@@ -198,7 +198,7 @@ export function reviewQueue(ctx, contest, project, rows, history, state) {
   <td><a href="/p/${project.id}/s/${r.id}">상세</a></td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">접수 기록이 없습니다.</p>'}</section>`;
 }
 
-export function submission(ctx, contest, project, record, files, cells, duplicates, allowed) {
+export function submission(ctx, contest, project, record, files, cells, duplicates, comparison, allowed) {
   const staff = ctx.user.role !== 'participant';
   const root = '/p/' + project.id + '/s/' + record.id;
   const fileTitles = { prediction: '예측 CSV', notebook: 'Notebook', model: '모델 가중치' };
@@ -217,6 +217,19 @@ export function submission(ctx, contest, project, record, files, cells, duplicat
     ${staff && record.status === 'scored' ? `<aside class="panel section"><h2>검토 보조 정보</h2>
     <p>예측값 전체가 동일한 다른 참가자 기록 <strong>${duplicates}건</strong></p>
     <p class="muted small">동일 예측은 확인이 필요한 신호입니다. Notebook의 모델 로드, 추론 및 CSV 생성 과정을 같이 확인하세요.</p>
+    <h3>재생성 CSV 대조</h3>
+    ${comparison ? `<dl class="details">
+    <dt>대조 결과</dt><dd><strong>${comparison.matched} / ${comparison.total}건 일치</strong></dd>
+    <dt>불일치</dt><dd>${comparison.total - comparison.matched}건${comparison.matched < comparison.total
+      ? ` · ID 예시 ${esc(JSON.parse(comparison.differences).join(', '))}` : ''}</dd>
+    <dt>대조 기록</dt><dd>${esc(comparison.reviewer_name)} · ${date(comparison.created)}</dd>
+    <dt>재생성 방법</dt><dd class="preserve">${esc(comparison.source_note)}</dd>
+    </dl>` : '<p class="muted small">등록된 재생성 CSV 대조 기록이 없습니다.</p>'}
+    <p class="muted small">대조 결과는 검토 근거로 기록합니다. 공식 점수는 제출 당시의 예측 CSV로 계산합니다.</p>
+    ${allowed.propose ? `<form class="stack" method="post" enctype="multipart/form-data" action="${root}/compare">${csrf(ctx)}
+    <label>재생성 CSV <small>예측 양식과 같은 헤더, 최대 4 MiB</small><input type="file" name="regenerated" accept=".csv" required></label>
+    <label>재생성 방법<textarea name="source_note" rows="2" maxlength="500" placeholder="사용한 모델과 실행 방법" required></textarea></label>
+    <button class="secondary">대조 결과 저장</button></form>` : ''}
     ${allowed.propose ? `<form class="stack" method="post" action="${root}/propose">${csrf(ctx)}<label>제안 판정<select name="choice"><option value="pass">적합</option><option value="fail">부적합</option></select></label>
     <label>검토 의견<textarea name="note" rows="3" maxlength="1500" required></textarea></label><button>판정 제안 저장</button></form>` : ''}
     ${allowed.approve ? `<form class="stack" method="post" action="${root}/decide">${csrf(ctx)}
