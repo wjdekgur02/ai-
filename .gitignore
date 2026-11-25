@@ -1,0 +1,6 @@
+data/
+.demo-data/
+.env
+node_modules/
+*.sqlite
+*.sqlite-*
