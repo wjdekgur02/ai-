@@ -11,6 +11,10 @@ ScoreLab은 경진대회 참가자의 예측 결과를 같은 기준으로 채�
 
 설비의 고장 여부를 구분하는 **Machine Predictive Maintenance Classification**을 시연 과제로 사용했습니다. 산업 설비를 모사한 합성 데이터 10,000건으로, 각 행에는 제품 등급, 대기·공정 온도, 회전수, 토크, 공구 마모 시간이 들어 있습니다. Python으로 8,000건에서 결정트리를 학습하고, 따로 남겨 둔 2,000건의 예측을 CSV로 만들어 ScoreLab에 제출했습니다. [Kaggle 데이터셋](https://www.kaggle.com/datasets/shivamb/machine-predictive-maintenance-classification)
 
+## 시연 영상
+
+[ScoreLab 시연 영상 보기 (WebM)](docs/scorelab-demo.webm)
+
 ## 실행과 역할별 확인
 
 Node.js 24와 Python 3를 사용합니다. 별도 패키지 설치는 필요 없습니다. [Kaggle Input](https://www.kaggle.com/datasets/shivamb/machine-predictive-maintenance-classification)에서 `predictive_maintenance.csv`를 내려받은 뒤 아래처럼 파일 위치를 지정하세요.
