@@ -6,7 +6,7 @@
   "engines": { "node": ">=24" },
   "scripts": {
     "start": "node src/server.mjs",
-    "demo": "node src/demo.mjs",
+    "demo": "node src/gta-demo.mjs",
     "admin": "node src/admin.mjs",
     "test": "node --test"
   }
