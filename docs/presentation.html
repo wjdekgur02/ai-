@@ -98,73 +98,73 @@
 <body>
   <nav aria-label="슬라이드 이동">
     <a href="#s1" aria-label="1. 개발 목적" aria-current="location">1</a>
-    <a href="#s2" aria-label="2. 구현 흐름">2</a>
-    <a href="#s3" aria-label="3. Kaggle 실험">3</a>
-    <a href="#s4" aria-label="4. 시연">4</a>
-    <a href="#s5" aria-label="5. 운영 규칙">5</a>
+    <a href="#s2" aria-label="2. 제출과 접수">2</a>
+    <a href="#s3" aria-label="3. 자동 채점">3</a>
+    <a href="#s4" aria-label="4. 추론 결과 검토">4</a>
+    <a href="#s5" aria-label="5. 최종 확정">5</a>
   </nav>
 
   <main>
     <section id="s1" aria-labelledby="title">
       <div class="content">
-        <p class="section-name">ScoreLab</p>
-        <h1 id="title">예측 CSV가<br>최종 성적이 되기까지</h1>
+        <p class="section-name">ScoreLab · 산업 설비 고장 분류</p>
+        <h1 id="title">제출 한 건이<br>최종 성적이 되기까지</h1>
 
         <div class="points">
-          <p>AI 모델의 예측 결과를 자동 채점하고, 제출 코드를 검토해 경진대회 성적을 확정하는 웹 서비스입니다.</p>
-          <p class="detail">Node.js · SQLite</p>
+          <p><strong>제출 → 자동 채점 → 코드 검토 → 최종 승인</strong></p>
+          <p class="detail">Kaggle의 설비 고장 분류 과제에서 참가자가 낸 예측 파일을 따라갑니다.</p>
         </div>
       </div>
     </section>
 
-    <section id="s2" aria-labelledby="workflow">
+    <section id="s2" aria-labelledby="submission">
       <div class="content">
-        <p class="section-name">구현 흐름</p>
-        <h2 id="workflow">제출·채점·승인</h2>
+        <p class="section-name">01 · 제출과 접수</p>
+        <h2 id="submission">참가자가 세 파일을<br>제출합니다</h2>
 
         <div class="points">
-          <p><strong>제출</strong><br>참가자가 예측 CSV, Notebook, 모델 가중치를 올립니다.</p>
-          <p><strong>채점</strong><br>서버가 행 ID로 예측값과 정답을 대조하고, 최고점을 익명 리더보드에 표시합니다.</p>
-          <p><strong>승인</strong><br>관리자1이 코드와 로그를 검토해 판정을 제안하고, 관리자2가 승인합니다.</p>
+          <p>정답을 제외한 평가 데이터를 받아<br>예측 CSV, Notebook, 모델 가중치를 올립니다.</p>
+          <p>서버는 파일 내용과 CSV의 <code>UDI,Target</code> 헤더,<br>행 ID와 레이블을 확인합니다.</p>
+          <p class="detail">마감 전에 전송을 시작하면 수신 완료 후 채점합니다. 마감 후에 시작한 제출은 접수만 합니다.</p>
         </div>
       </div>
     </section>
 
-    <section id="s3" aria-labelledby="experiment">
+    <section id="s3" aria-labelledby="scoring">
       <div class="content">
-        <p class="section-name">Kaggle 실험</p>
-        <h2 id="experiment">평가셋 고장 68건 중<br>60건 탐지</h2>
+        <p class="section-name">02 · 자동 채점</p>
+        <h2 id="scoring">2,000건 중 1,992건 정답<br><span class="result">공식 점수 0.996</span></h2>
 
         <div class="points">
-          <p>설비를 모사한 합성 데이터 10,000건 중<br>8,000건으로 결정트리를 학습하고 2,000건으로 평가했습니다.</p>
-          <p><strong>정확도 99.60%</strong> · 고장 8건 미탐 · 오경보 0건</p>
-          <p class="detail">모두 정상으로 분류하면 정확도는 96.60%이고, 탐지한 고장은 0건입니다. <a href="https://www.kaggle.com/datasets/shivamb/machine-predictive-maintenance-classification">Kaggle 데이터셋</a></p>
+          <p>학습용 8,000건으로 만든 결정트리가<br>평가용 2,000건의 고장 여부를 예측했습니다.</p>
+          <p>서버는 행 ID별 예측을 비공개 정답과 비교합니다.<br>채점이 완료되면 제출 가능 횟수가 1회 줄어듭니다.</p>
+          <p class="detail">평가셋 고장 68건 중 60건 탐지 · 미탐 8건 · 오경보 0건<br><a href="https://www.kaggle.com/datasets/shivamb/machine-predictive-maintenance-classification">Kaggle 데이터셋</a> · <a href="https://github.com/wjdekgur02/ai-/raw/b1fe82b93a2bd233ed597b7514073a7c3a4a238d/docs/scorelab-demo.mp4">시연 영상</a></p>
         </div>
       </div>
     </section>
 
-    <section id="s4" aria-labelledby="demo">
+    <section id="s4" aria-labelledby="review">
       <div class="content">
-        <p class="section-name">시연</p>
-        <h2 id="demo">제출하면 점수와<br>남은 횟수를 확인</h2>
+        <p class="section-name">03 · 추론 결과 검토</p>
+        <h2 id="review">예측 CSV가 어떻게<br>생성됐는지 확인합니다</h2>
 
         <div class="points">
-          <p>세 파일을 올리고 제출 상세를 엽니다.</p>
-          <p><strong class="result">공식 점수 0.996</strong><br>정답 1,992건 ÷ 평가 2,000건</p>
-          <p class="detail">채점이 완료되면 해당 회차의 남은 제출 횟수가 1회 줄어듭니다. <a href="https://github.com/wjdekgur02/ai-/raw/b1fe82b93a2bd233ed597b7514073a7c3a4a238d/docs/scorelab-demo.mp4">시연 영상</a></p>
+          <p>이 제출이 참가자의 최고점이면 익명 리더보드에<br>점수와 검증 상태가 표시됩니다.</p>
+          <p>관리자1은 Notebook의 학습·추론·CSV 저장 코드와 로그,<br>가중치 파일과 동일 예측 기록 수를 검토합니다.</p>
+          <p class="detail">관리자1이 검토 의견과 적합·부적합 판정을 제안합니다. 서버에서는 제출 코드를 실행하지 않습니다.</p>
         </div>
       </div>
     </section>
 
-    <section id="s5" aria-labelledby="rules">
+    <section id="s5" aria-labelledby="approval">
       <div class="content">
-        <p class="section-name">운영 규칙</p>
-        <h2 id="rules">마감부터 최종 판정까지</h2>
+        <p class="section-name">04 · 최종 승인</p>
+        <h2 id="approval">관리자2가<br>최종 판정을 승인합니다</h2>
 
         <div class="points">
-          <p><strong>마감과 횟수</strong><br>마감 전에 시작한 업로드는 수신 완료 후 채점합니다. 마감 후 새 제출은 접수만 합니다.</p>
-          <p><strong>정답 비공개</strong><br>참가자에게는 정답 열을 제거한 평가 데이터와 예측 양식을 제공합니다.</p>
-          <p><strong>차순위 검토</strong><br>관리자2가 부적합을 승인하면 같은 참가자의 다음 기록을 검토합니다.</p>
+          <p><strong>적합 승인</strong><br>이 제출을 참가자의 대표 기록으로 확정합니다.</p>
+          <p><strong>부적합 승인</strong><br>이 기록을 후보에서 제외하고 같은 참가자의 다음 기록을 검토합니다.</p>
+          <p class="detail">제안과 승인 이력을 저장하고 최종 성적에 반영합니다.</p>
         </div>
       </div>
     </section>
